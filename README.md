@@ -3,6 +3,8 @@ GOST R 34.11-2012 hash function with 512/256 bit digest / WebAssembly
 
 This is work-in-progress rebuild of GOST R 34.11-2012 hash function ("Streebog") for WebAssembly.
 
+A live example is available at https://crashdemons.github.io/streebog-wasm/
+
 The standard for this hash function developed by the Center for
 Information Protection and Special Communications of the Federal
 Security Service of the Russian Federation with participation of the
