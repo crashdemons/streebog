@@ -26,7 +26,7 @@ function debug(s){
     debug("*Initialized hash context = "+ctx);
     
     
-    var inputText = "y";
+    var inputText = "test";
     var inBufLen = inputText.length;
     debug(" input string = "+inputText+" (length:"+inBufLen+")");
     
@@ -58,5 +58,7 @@ function debug(s){
     
     debug("*Done");
     
+    debug("Expected result (from /gost3411-2012 -s test): ")
+    debug("  7200bf5dea560f0d7960d07fdc8874ad9f3b86ece2e45f5502ae2e176f2c928e0e581152281f5aee818318bed7cbe6aa69999589234723ceb33175598365b5c8")
   };
 </script>
