@@ -1,32 +1,51 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>streebog-wasm example</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
 <script src="./streebog-wasm-dist/streebog-wasm.js"></script>
 <script>
+window.streebog_wasm = null;
+    
 function buf2hex(buffer) { // buffer is an ArrayBuffer
   return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
 }
-function debug(s){
-    console.log(s)
-    document.write(s+"<br>")
+function debugClear(){
+     var results = document.getElementById('results');
+     results.innerHTML="";
 }
+function debug(s){
+    var results = document.getElementById('results')
+    console.log(s)
     
-  Module.onRuntimeInitialized = async _ => {
-    const streebog_wasm = {
-      version: Module.cwrap('version', 'number', []),
-      
-      create_buffer: Module.cwrap('create_buffer', 'number', ['number']),
-      destroy_buffer: Module.cwrap('destroy_buffer', '', ['number']),
-      
-      init: Module.cwrap('streebog_init', 'number', ['number']),
-      update: Module.cwrap('streebog_update', '', ['number','number','number']),
-      final: Module.cwrap('streebog_final', '', ['number','number']),
-      cleanup: Module.cwrap('streebog_cleanup', '', ['number']),
-    };
+    var entry = document.createElement('div');
+    entry.innerText=s;
+    entry.innerHTML+="<br />";
+    
+    results.appendChild(entry);
+}
+function clickHash(){
+    var input = document.getElementById('input');
+    var inputText = input.value;
+    debugClear();
+    if(window.streebog_wasm===null){
+        debug("module not ready");
+    }else{
+        debug("module ready");
+        hashStringDebug(inputText);
+    }
+}
+function hashStringDebug(inputText){
     debug("Streebog-wasm library version: "+streebog_wasm.version());
     
     ctx = streebog_wasm.init(512);
     debug("*Initialized hash context = "+ctx);
     
     
-    var inputText = "test";
+    //var inputText = "test";
     var inBufLen = inputText.length;
     debug(" input string = "+inputText+" (length:"+inBufLen+")");
     
@@ -57,8 +76,30 @@ function debug(s){
     streebog_wasm.destroy_buffer(outBuffer);
     
     debug("*Done");
-    
-    debug("Expected result (from /gost3411-2012 -s test): ")
-    debug("  7200bf5dea560f0d7960d07fdc8874ad9f3b86ece2e45f5502ae2e176f2c928e0e581152281f5aee818318bed7cbe6aa69999589234723ceb33175598365b5c8")
+}
+
+  Module.onRuntimeInitialized = async _ => {
+    const api = {
+      version: Module.cwrap('version', 'number', []),
+      
+      create_buffer: Module.cwrap('create_buffer', 'number', ['number']),
+      destroy_buffer: Module.cwrap('destroy_buffer', '', ['number']),
+      
+      init: Module.cwrap('streebog_init', 'number', ['number']),
+      update: Module.cwrap('streebog_update', '', ['number','number','number']),
+      final: Module.cwrap('streebog_final', '', ['number','number']),
+      cleanup: Module.cwrap('streebog_cleanup', '', ['number']),
+    };
+    window.streebog_wasm = api;
   };
 </script>
+
+    </head>
+    <body>
+        <input type="text" id="input" value="test"><button onclick="clickHash()">Calculate Streebog Hash</button>
+        <hr>
+        <div id="results"></div>
+        <hr>
+        <div>Example known result for "test": 7200bf5dea560f0d7960d07fdc8874ad9f3b86ece2e45f5502ae2e176f2c928e0e581152281f5aee818318bed7cbe6aa69999589234723ceb33175598365b5c8</div>
+    </body>
+</html>
