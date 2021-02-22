@@ -35,20 +35,22 @@ async function debugBuffer(prefix,pBuffer,nBufLen){
 }
 function clickHash(){
     var input = document.getElementById('input');
+    var sizeSelect = document.getElementById('size');
+    var digestSize = +(sizeSelect.value);
     var inputText = input.value;
     debugClear();
     if(window.streebog_wasm===null){
         debug("module not ready");
     }else{
         debug("module ready");
-        hashStringDebug(inputText);
+        hashStringDebug(inputText,digestSize);
     }
 }
-async function hashStringDebug(inputText){
+async function hashStringDebug(inputText,digestSize){
     debug("Streebog-wasm library version: "+streebog_wasm.version());
     
-    ctx = streebog_wasm.init(512);
-    debug("*Initialized hash context = "+ctx);
+    ctx = streebog_wasm.init(digestSize);
+    debug("*Initialized hash context = "+ctx+", digest-size = "+digestSize);
     
     
     //var inputText = "test";
@@ -69,7 +71,7 @@ async function hashStringDebug(inputText){
     streebog_wasm.update(ctx, inBuffer, inBufLen);
     
     
-    var outBufLen = 64;
+    var outBufLen = digestSize/8;
     var outBuffer = streebog_wasm.create_buffer(outBufLen);
     debug(" allocated output buffer = "+outBuffer+" (length: "+outBufLen+")");
     debugBuffer("Unassigned Output Buffer",outBuffer,outBufLen);
@@ -107,10 +109,11 @@ async function hashStringDebug(inputText){
 
     </head>
     <body>
-        <input type="text" id="input" value="test"><button onclick="clickHash()">Calculate Streebog Hash</button>
+        <input type="text" id="input" value="test"><select id="size"><option value="256">Streebog-256</option><option value="512" selected="selected">Streebog-512</option></select><button onclick="clickHash()">Calculate Hash</button>
         <hr>
         <div id="results"></div>
         <hr>
-        <div>Example known result for "test": 7200bf5dea560f0d7960d07fdc8874ad9f3b86ece2e45f5502ae2e176f2c928e0e581152281f5aee818318bed7cbe6aa69999589234723ceb33175598365b5c8</div>
+        <div>Known Streebog-512 result for "test": 7200bf5dea560f0d7960d07fdc8874ad9f3b86ece2e45f5502ae2e176f2c928e0e581152281f5aee818318bed7cbe6aa69999589234723ceb33175598365b5c8</div>
+        <div>Known Streebog-256 result for "test": 12a50838191b5504f1e5f2fd078714cf6b592b9d29af99d0b10d8d02881c3857</div>
     </body>
 </html>
