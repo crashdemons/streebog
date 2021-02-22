@@ -57,7 +57,7 @@ streebog={
 ```
 
 
-Example using cwrapped API
+Example using cwrap methods
 ---
 For a simple example hashing an input, you might do something like the following after using cwrap:
 ```
@@ -88,6 +88,9 @@ streebog.destroy_buffer(inputBuffer);
 streebog.destroy_buffer(outputBuffer);
 ```
 
+Example using Streebog JS Wrapper methods
+---
+coming soon.
 
 
 Internal C API (not exposed in WASM)
