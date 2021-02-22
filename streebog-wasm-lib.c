@@ -34,6 +34,17 @@ int version() {
   return 7;
 }
 
+
+EMSCRIPTEN_KEEPALIVE
+void* create_buffer(size_t size){
+	return memalloc(size);
+}
+
+EMSCRIPTEN_KEEPALIVE
+void destroy_buffer(void* buffer){
+	free(buffer);
+}
+
 EMSCRIPTEN_KEEPALIVE
 GOST34112012Context* streebog_init(const unsigned int digest_size){
 	GOST34112012Context* CTX = memalloc(sizeof(GOST34112012Context));
@@ -54,10 +65,6 @@ void streebog_final(GOST34112012Context *CTX, unsigned char *digest){
 EMSCRIPTEN_KEEPALIVE
 void streebog_cleanup(GOST34112012Context *CTX){
 	GOST34112012Cleanup(CTX);
-}
-
-EMSCRIPTEN_KEEPALIVE
-void streebog_release(GOST34112012Context *CTX){
 	free(CTX);
 }
 

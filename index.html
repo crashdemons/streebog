@@ -1,0 +1,62 @@
+<script src="./streebog-wasm-dist/streebog-wasm.js"></script>
+<script>
+function buf2hex(buffer) { // buffer is an ArrayBuffer
+  return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
+}
+function debug(s){
+    console.log(s)
+    document.write(s+"<br>")
+}
+    
+  Module.onRuntimeInitialized = async _ => {
+    const streebog_wasm = {
+      version: Module.cwrap('version', 'number', []),
+      
+      create_buffer: Module.cwrap('create_buffer', 'number', ['number']),
+      destroy_buffer: Module.cwrap('destroy_buffer', '', ['number']),
+      
+      init: Module.cwrap('streebog_init', 'number', ['number']),
+      update: Module.cwrap('streebog_update', '', ['number','number','number']),
+      final: Module.cwrap('streebog_final', '', ['number','number']),
+      cleanup: Module.cwrap('streebog_cleanup', '', ['number']),
+    };
+    debug("Streebog-wasm library version: "+streebog_wasm.version());
+    
+    ctx = streebog_wasm.init(512);
+    debug("*Initialized hash context = "+ctx);
+    
+    
+    var inputText = "y";
+    var inBufLen = inputText.length;
+    debug(" input string = "+inputText+" (length:"+inBufLen+")");
+    
+    var inBuffer = streebog_wasm.create_buffer(inBufLen);
+    Module.HEAP8.set(inputText, inBuffer);
+    debug(" created buffer for input = "+inBuffer);
+    
+    
+    debug("*Updating context with input buffer");
+    streebog_wasm.update(ctx, inBuffer, inBufLen);
+    
+    
+    var outBufLen = 64;
+    var outBuffer = streebog_wasm.create_buffer(outBufLen);
+    debug(" allocated output buffer = "+outBuffer+" (length: "+outBufLen+")");
+    
+    streebog_wasm.final(ctx,outBuffer);
+    debug("*Finalizing hash to output buffer.");
+    
+    const resultView = new Uint8Array(Module.HEAP8.buffer, outBuffer, outBufLen);
+    const result = new Uint8Array(resultView);
+    
+    debug(" Result = "+buf2hex(result.buffer));
+    
+    debug("*Cleaning up");
+    streebog_wasm.cleanup(ctx);
+    streebog_wasm.destroy_buffer(inBuffer);
+    streebog_wasm.destroy_buffer(outBuffer);
+    
+    debug("*Done");
+    
+  };
+</script>
