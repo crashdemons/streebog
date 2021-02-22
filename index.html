@@ -8,7 +8,6 @@
         
 <script src="./streebog-wasm-dist/streebog-wrapped.js"></script>
 <script>
-window.streebog_wasm = null;
     
 function buf2hex(buffer) { // buffer is an ArrayBuffer
   return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
@@ -28,11 +27,6 @@ function debug(s){
     results.appendChild(entry);
 }
 
-async function debugBuffer(prefix,pBuffer,nBufLen){
-    const resultView = new Uint8Array(streebog_wasm.module.HEAP8.buffer, pBuffer, nBufLen);
-    const result = new Uint8Array(resultView);
-    await debug("  "+prefix+" = "+buf2hex(result.buffer));
-}
 function clickHash(){
     var input = document.getElementById('input');
     var sizeSelect = document.getElementById('size');
