@@ -7,6 +7,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         
 <script src="./streebog-wasm-dist/streebog-wasm.js"></script>
+<script src="./streebog-js-wrapper/streebog-js.js"></script>
 <script>
 window.streebog_wasm = null;
     
@@ -39,73 +40,18 @@ function clickHash(){
     var digestSize = +(sizeSelect.value);
     var inputText = input.value;
     debugClear();
-    if(window.streebog_wasm===null){
-        debug("module not ready");
+    if(window.streebog===null){
+        debug("API not ready");
     }else{
-        debug("module ready");
+        debug("API ready");
         hashStringDebug(inputText,digestSize);
     }
 }
 async function hashStringDebug(inputText,digestSize){
-    debug("Streebog-wasm library version: "+streebog_wasm.version());
-    
-    ctx = streebog_wasm.init(digestSize);
-    debug("*Initialized hash context = "+ctx+", digest-size = "+digestSize);
-    
-    
-    //var inputText = "test";
-    var inBufLen = inputText.length;
-    debug(" input string = "+inputText+" (length:"+inBufLen+")");
-    
-    var inBuffer = streebog_wasm.create_buffer(inBufLen);
-    debug(" created buffer for input = "+inBuffer);
-    await debugBuffer("Unassigned Input Buffer",inBuffer,inBufLen);
-    
-    var enc = new TextEncoder()
-    var inputArray = enc.encode(inputText);
-    streebog_wasm.module.HEAP8.set(inputArray, inBuffer);
-    debugBuffer("Assigned Input Buffer",inBuffer,inBufLen);
-    
-    
-    debug("*Updating context with input buffer");
-    streebog_wasm.update(ctx, inBuffer, inBufLen);
-    
-    
-    var outBufLen = digestSize/8;
-    var outBuffer = streebog_wasm.create_buffer(outBufLen);
-    debug(" allocated output buffer = "+outBuffer+" (length: "+outBufLen+")");
-    debugBuffer("Unassigned Output Buffer",outBuffer,outBufLen);
-    
-    streebog_wasm.final(ctx,outBuffer);
-    debug("*Finalizing hash to output buffer.");
-    
-    const resultView = new Uint8Array(streebog_wasm.module.HEAP8.buffer, outBuffer, outBufLen);
-    const result = new Uint8Array(resultView);
-    debugBuffer("Result",outBuffer,outBufLen);
-    
-    debug("*Cleaning up");
-    streebog_wasm.cleanup(ctx);
-    streebog_wasm.destroy_buffer(inBuffer);
-    streebog_wasm.destroy_buffer(outBuffer);
-    
+    debug("Streebog-wasm library version: "+streebog.version());
+    debug("*Result = "+streebog.digestHex(inputText,digestSize));
     debug("*Done");
 }
-
-  createStreebogModule().then(async module => {
-    const api = {
-      module: module,
-      version: module.cwrap('version', 'number', []),
-      
-      create_buffer: module.cwrap('create_buffer', 'number', ['number']),
-      destroy_buffer: module.cwrap('destroy_buffer', '', ['number']),
-      
-      init: module.cwrap('streebog_init', 'number', ['number']),
-      update: module.cwrap('streebog_update', '', ['number','number','number']),
-      final: module.cwrap('streebog_final', '', ['number','number']),
-      cleanup: module.cwrap('streebog_cleanup', '', ['number']),
-    };
-    window.streebog_wasm = api;
-  });
 </script>
 
     </head>
