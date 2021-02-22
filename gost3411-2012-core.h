@@ -28,7 +28,7 @@
 ALIGN(16) union uint512_u
 {
     unsigned long long QWORD[8];
-} uint512_u;
+};// uint512_u;
 
 #include "gost3411-2012-const.h"
 #include "gost3411-2012-precalc.h"

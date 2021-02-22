@@ -9,6 +9,8 @@
 
 #include "gost3411-2012-core.h"
 
+ALIGN(16) union uint512_u uint512_u;
+
 #define BSWAP64(x) \
     (((x & 0xFF00000000000000ULL) >> 56) | \
      ((x & 0x00FF000000000000ULL) >> 40) | \
