@@ -28,10 +28,10 @@ function debug(s){
     results.appendChild(entry);
 }
 
-function debugBuffer(prefix,pBuffer,nBufLen){
+async function debugBuffer(prefix,pBuffer,nBufLen){
     const resultView = new Uint8Array(Module.HEAP8.buffer, pBuffer, nBufLen);
     const result = new Uint8Array(resultView);
-    debug("  "+prefix+" = "+buf2hex(result.buffer));
+    await debug("  "+prefix+" = "+buf2hex(result.buffer));
 }
 function clickHash(){
     var input = document.getElementById('input');
@@ -44,7 +44,7 @@ function clickHash(){
         hashStringDebug(inputText);
     }
 }
-function hashStringDebug(inputText){
+async function hashStringDebug(inputText){
     debug("Streebog-wasm library version: "+streebog_wasm.version());
     
     ctx = streebog_wasm.init(512);
@@ -57,7 +57,7 @@ function hashStringDebug(inputText){
     
     var inBuffer = streebog_wasm.create_buffer(inBufLen);
     debug(" created buffer for input = "+inBuffer);
-    debugBuffer("Unassigned Input Buffer",inBuffer,inBufLen);
+    await debugBuffer("Unassigned Input Buffer",inBuffer,inBufLen);
     
     var enc = new TextEncoder()
     var inputArray = enc.encode(inputText);
