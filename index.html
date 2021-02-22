@@ -29,7 +29,7 @@ function debug(s){
 }
 
 async function debugBuffer(prefix,pBuffer,nBufLen){
-    const resultView = new Uint8Array(Module.HEAP8.buffer, pBuffer, nBufLen);
+    const resultView = new Uint8Array(streebog_wasm.module.HEAP8.buffer, pBuffer, nBufLen);
     const result = new Uint8Array(resultView);
     await debug("  "+prefix+" = "+buf2hex(result.buffer));
 }
@@ -63,7 +63,7 @@ async function hashStringDebug(inputText,digestSize){
     
     var enc = new TextEncoder()
     var inputArray = enc.encode(inputText);
-    Module.HEAP8.set(inputArray, inBuffer);
+    streebog_wasm.module.HEAP8.set(inputArray, inBuffer);
     debugBuffer("Assigned Input Buffer",inBuffer,inBufLen);
     
     
@@ -79,7 +79,7 @@ async function hashStringDebug(inputText,digestSize){
     streebog_wasm.final(ctx,outBuffer);
     debug("*Finalizing hash to output buffer.");
     
-    const resultView = new Uint8Array(Module.HEAP8.buffer, outBuffer, outBufLen);
+    const resultView = new Uint8Array(streebog_wasm.module.HEAP8.buffer, outBuffer, outBufLen);
     const result = new Uint8Array(resultView);
     debugBuffer("Result",outBuffer,outBufLen);
     
@@ -91,20 +91,21 @@ async function hashStringDebug(inputText,digestSize){
     debug("*Done");
 }
 
-  Module.onRuntimeInitialized = async _ => {
+  createStreebogModule().then(async module => {
     const api = {
-      version: Module.cwrap('version', 'number', []),
+      module: module,
+      version: module.cwrap('version', 'number', []),
       
-      create_buffer: Module.cwrap('create_buffer', 'number', ['number']),
-      destroy_buffer: Module.cwrap('destroy_buffer', '', ['number']),
+      create_buffer: module.cwrap('create_buffer', 'number', ['number']),
+      destroy_buffer: module.cwrap('destroy_buffer', '', ['number']),
       
-      init: Module.cwrap('streebog_init', 'number', ['number']),
-      update: Module.cwrap('streebog_update', '', ['number','number','number']),
-      final: Module.cwrap('streebog_final', '', ['number','number']),
-      cleanup: Module.cwrap('streebog_cleanup', '', ['number']),
+      init: module.cwrap('streebog_init', 'number', ['number']),
+      update: module.cwrap('streebog_update', '', ['number','number','number']),
+      final: module.cwrap('streebog_final', '', ['number','number']),
+      cleanup: module.cwrap('streebog_cleanup', '', ['number']),
     };
     window.streebog_wasm = api;
-  };
+  });
 </script>
 
     </head>
@@ -117,3 +118,4 @@ async function hashStringDebug(inputText,digestSize){
         <div>Known Streebog-256 result for "test": 12a50838191b5504f1e5f2fd078714cf6b592b9d29af99d0b10d8d02881c3857</div>
     </body>
 </html>
+
