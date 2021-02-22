@@ -1,7 +1,7 @@
 GOST R 34.11-2012 hash function with 512/256 bit digest / WebAssembly
 =======================================================
 
-This is work-in-progress rebuild of GOST R 34.11-2012 hash function ("Streebog") for WebAssembly.
+This is work-in-progress rebuild of GOST R 34.11-2012 hash function ("Streebog") for WebAssembly using Emscripten.
 
 A live example is available at https://crashdemons.github.io/streebog-wasm/
 
@@ -23,11 +23,74 @@ Build requirements
 Compile and install
 -------------------
 
-    # ./make-wasm.sh
+ `./make-wasm.sh`
+ 
+ Notes
+ ---
+ MMX and SSE support are currently disabled due to compile errors with EMCC.
+
+
+Exported WASM Functions
+---
+The following functions are exported in the compiled Webassembly binary (.wasm) through emscripten.
+`int version()` returns the current version of the Streebog WASM Support Library - used for indicating breaking changes.
+`void* create_buffer(size_t size)` allocates and returns the address of a buffer of the indicated size in bytes. Internally this buffer is aligned to a multiple of 64. Buffers may be reused.
+`void destroy_buffer(void* buffer)` frees a buffer previously created with `create_buffer`
+`void* streebog_init(unsigned int digestSize)` creates, initializes, and returns a Streebog hash context to be used to hash an object. Digest size (in bits) must be 512 or 256.
+`void streebog_update(void* context, void* buffer, size_t bufferLength)` Hash the additional buffer of data up to `bufferLength` bytes long.  Best performance is had when `bufferLength` is a multiple of 64.  The buffer provided is recommended to be created with `create_buffer` and freed with `destroy_buffer` when finished with it.
+`void streebog_final(void* context, void* digestBuffer)` Finalizes the hashing process and sets the Streebog hash in the buffer provided. The buffer length must match the digest size in bytes (eg: Streebog 512 must have a digest buffer 512/8 or 64 bytes long). The buffer provided is recommended to be created with `create_buffer` and freed with `destroy_buffer` when finished with it.
+`void streebog_cleanup(void* context)` Clears, destroys, and releases the hashing context (created by a call to `streebog_init`)
+
+WASM Module cwrap equivalencies
+---
+Using emscripten cwrap, the above exported functions can be cwrapped as follows.
+```
+streebog={
+      version: Module.cwrap('version', 'number', []),
+      create_buffer: Module.cwrap('create_buffer', 'number', ['number']),
+      destroy_buffer: Module.cwrap('destroy_buffer', '', ['number']),
+      init: Module.cwrap('streebog_init', 'number', ['number']),
+      update: Module.cwrap('streebog_update', '', ['number','number','number']),
+      final: Module.cwrap('streebog_final', '', ['number','number']),
+      cleanup: Module.cwrap('streebog_cleanup', '', ['number']),
+}
+```
+
+
+Example using cwrapped API
+---
+For a simple example hashing an input, you might do something like the following after using cwrap:
+```
+//set up Streebog-512
+var ctx = streebog.init(512);
+
+//Create our input
+var input = "test";
+var inputArray = (new TextEncoder()).encode(input);
+var inputBuffer = streebog.create_buffer(inputArray.length);
+Module.HEAP8.set(inputArray, inputBuffer);
+
+//Update the hash with the new input data
+streebog.update(ctx, inputBuffer, inputArray.length);
+
+//generate our hash digest output
+var outputBuffer = streebog.create_buffer(512/8);
+streebog.final(ctx,outputBuffer);
+
+//retrieve the hash as a byte array or as a traditional hex string
+var resultView = new Uint8Array(Module.HEAP8.buffer, outputBuffer, 512/8);
+var result = new Uint8Array(resultView);
+var resultHex = Array.prototype.map.call(result, x => ('00' + x.toString(16)).slice(-2)).join('');
+
+//clean up as needed
+streebog.cleanup(ctx);
+streebog.destroy_buffer(inputBuffer);
+streebog.destroy_buffer(outputBuffer);
+```
 
 
 
-API (outdated information)
+Internal C API (not exposed in WASM)
 ---
 The API to this implementation is quite straightforward and similar to
 other hash function APIs.  Actually the CLI utility in this distribution
@@ -100,7 +163,7 @@ distribution tries its best to determine which of the instruction set to use.
 It falls back to the portable code unless any of extensions detected.
 
 
-Example of usage
+Example of Internal C usage
 ----------------
 
 ```c
@@ -134,32 +197,6 @@ Example of usage
     ...
 
 ```
-
-Portability notes
------------------
-...
-
-
-Platforms tested
-----------------
-* FreeBSD x86/x86_64
-* Linux   x86/x86_64
-* Darwin  x86/x86_64
-* Linux   powerpc
-
-
-Performance
------------
-To measure performance of this implementation
-[SUPERCOP](https://bench.cr.yp.to/supercop.html) toolkit has been used.  You
-can set `SUPERCOP` environment variable to any value and then run `make
-configure` to prepare this implementation to run on SUPERCOP.
-
-    Intel(R) Pentium(R) CPU G6950 @ 2.80GHz    x86: 40 cycles per byte ( 70 MB/s)
-    Intel(R) Pentium(R) CPU G6950 @ 2.80GHz x86_64: 36 cycles per byte ( 78 MB/s)
-    Intel(R) Xeon(R)    CPU X5650 @ 2.67GHz x86_64: 31 cycles per byte ( 84 MB/s)
-    Intel(R) Core(TM) i7-2600 CPU @ 3.40GHz x86_64: 28 cycles per byte (121 MB/s)
-
 
 License
 -------
