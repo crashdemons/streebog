@@ -33,13 +33,13 @@ Compile and install
 Exported WASM Functions
 ---
 The following functions are exported in the compiled Webassembly binary (.wasm) through emscripten.
-`int version()` returns the current version of the Streebog WASM Support Library - used for indicating breaking changes.
-`void* create_buffer(size_t size)` allocates and returns the address of a buffer of the indicated size in bytes. Internally this buffer is aligned to a multiple of 64. Buffers may be reused.
-`void destroy_buffer(void* buffer)` frees a buffer previously created with `create_buffer`
-`void* streebog_init(unsigned int digestSize)` creates, initializes, and returns a Streebog hash context to be used to hash an object. Digest size (in bits) must be 512 or 256.
-`void streebog_update(void* context, void* buffer, size_t bufferLength)` Hash the additional buffer of data up to `bufferLength` bytes long.  Best performance is had when `bufferLength` is a multiple of 64.  The buffer provided is recommended to be created with `create_buffer` and freed with `destroy_buffer` when finished with it.
-`void streebog_final(void* context, void* digestBuffer)` Finalizes the hashing process and sets the Streebog hash in the buffer provided. The buffer length must match the digest size in bytes (eg: Streebog 512 must have a digest buffer 512/8 or 64 bytes long). The buffer provided is recommended to be created with `create_buffer` and freed with `destroy_buffer` when finished with it.
-`void streebog_cleanup(void* context)` Clears, destroys, and releases the hashing context (created by a call to `streebog_init`)
+* `int version()` returns the current version of the Streebog WASM Support Library - used for indicating breaking changes.
+* `void* create_buffer(size_t size)` allocates and returns the address of a buffer of the indicated size in bytes. Internally this buffer is aligned to a multiple of 64. Buffers may be reused.
+* `void destroy_buffer(void* buffer)` frees a buffer previously created with `create_buffer`
+* `void* streebog_init(unsigned int digestSize)` creates, initializes, and returns a Streebog hash context to be used to hash an object. Digest size (in bits) must be 512 or 256.
+* `void streebog_update(void* context, void* buffer, size_t bufferLength)` Hash the additional buffer of data up to `bufferLength` bytes long.  Best performance is had when `bufferLength` is a multiple of 64.  The buffer provided is recommended to be created with `create_buffer` and freed with `destroy_buffer` when finished with it.
+* `void streebog_final(void* context, void* digestBuffer)` Finalizes the hashing process and sets the Streebog hash in the buffer provided. The buffer length must match the digest size in bytes (eg: Streebog 512 must have a digest buffer 512/8 or 64 bytes long). The buffer provided is recommended to be created with  `create_buffer` and freed with `destroy_buffer` when finished with it.
+* `void streebog_cleanup(void* context)` Clears, destroys, and releases the hashing context (created by a call to `streebog_init`)
 
 WASM Module cwrap equivalencies
 ---
