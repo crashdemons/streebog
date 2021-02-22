@@ -31,7 +31,7 @@ memalloc(const size_t size)
 
 EMSCRIPTEN_KEEPALIVE
 int version() {
-  return 7;
+  return 1;
 }
 
 
