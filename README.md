@@ -1,9 +1,8 @@
-GOST R 34.11-2012 hash function with 512/256 bit digest
+GOST R 34.11-2012 hash function with 512/256 bit digest / WebAssembly
 =======================================================
 
-[![Build Status](https://travis-ci.org/adegtyarev/streebog.svg?branch=master)](https://travis-ci.org/adegtyarev/streebog)
+This is work-in-progress rebuild of GOST R 34.11-2012 hash function ("Streebog") for WebAssembly.
 
-This is portable implementation of the GOST R 34.11-2012 hash function.
 The standard for this hash function developed by the Center for
 Information Protection and Special Communications of the Federal
 Security Service of the Russian Federation with participation of the
@@ -15,90 +14,18 @@ The standard published as [RFC 6986](https://tools.ietf.org/html/rfc6986).
 
 Build requirements
 ------------------
-* GCC, Clang or ICC compiler supporting 64-bit integers.
 
-* GNU make (or any compatible make).
+* EMCC (Emscripten)
 
 
 Compile and install
 -------------------
-The software is smart enough to detect the most suitable configuration
-for running hardware and software platform.  In almost all cases it is
-sufficient to run `make` on top of the source directory:
 
-    # make
-
-This will configure and compile a binary program file named
-`gost3411-2012`.
+    # ./make-wasm.sh
 
 
-Usage instructions
-------------------
-The program outputs GOST R 34.11-2012 hash digest in hexadecimal format.
-Each file listed on the command line is processed and hash is printed
-for each one.  Stdin is read as input when executed without arguments.
 
-    # ./gost3411-2012 -h
-    Usage: gost3411-2012 [-25bhvqrte] [-s string] [files ...]
-
-    Options:
-       -2          Output 256-bit digest.
-       -5          Output 512-bit digest (default).
-       -t          Testing mode to produce hash of example
-                   messages defined in standard.
-       -b          Benchmark mode (to see how fast or slow
-                   this implementation).
-       -s string   Print a digest of the given string.
-       -r          Reverses the format of the output.
-                   This helps with visual diffs.
-       -q          Quiet mode - only the digest is printed out.
-       -e          Switch endianness when printing out
-                   resulting hash.  Default: least significant
-                   first.  With this options set all bytes in
-                   resulting hash are printed in reverse
-                   order, more precisely, most significant
-                   first.
-
-
-Using with Docker
------------------
-There is a pre-build Docker image of this software ready to use:
-
-    $ docker run --rm adegtyarev/streebog gost3411-2012 -v
-    gost3411-2012 0.12
-
-Let's say you want to get a hash digest of LICENSE file in the current
-directory.  Here is how:
-
-    $ docker run --rm -v $PWD/LICENSE:/LICENSE:ro adegtyarev/streebog gost3411-2012 -2 /LICENSE
-    GOST R 34.11-2012 (/LICENSE) = c73c0c79b345d0aa779efab878fbe8ff248ae666ac1fdd12b137e7f41ef2da82
-
-You could also get that digest by using STDIN mode:
-
-    $ cat LICENSE |docker run --rm -i adegtyarev/streebog gost3411-2012 -2
-    c73c0c79b345d0aa779efab878fbe8ff248ae666ac1fdd12b137e7f41ef2da82
-
-
-Compile-time options
---------------------
-By default, a compiler defined in `CC` environment variable is used, falling
-back to `cc`.  Compile the source with specified compiler:
-
-    # make CC=clang
-
-Special target `remake` may need to be used to overwrite recently compiled
-up-to date binary:
-
-    # make remake CC=icc
-
-This will recompile sources from scratch using Intel C Compiler with
-default flags.  If you need to adjust these compiler flags, try to set
-them with `CFLAGS` knob:
-
-    # make remake CC=icc CFLAGS="-O3"
-
-
-API
+API (outdated information)
 ---
 The API to this implementation is quite straightforward and similar to
 other hash function APIs.  Actually the CLI utility in this distribution
